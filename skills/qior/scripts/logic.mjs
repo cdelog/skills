@@ -64,21 +64,19 @@ export function buildReceipt(packet, answers) {
 }
 
 export function receiptText(packet, answers) {
-  const r = buildReceipt(packet, answers);
-  const lines = [`QIOR answers | ${r.packetId} | revision ${r.revision}`];
-  if (r.origin) lines.push(`Origin: ${r.origin}`);
-  lines.push('');
-  for (const a of r.responses) {
+  const lines = [];
+  for (const a of answerRecords(packet, answers)) {
     const prefix = `${a.id}: `;
-    if (a.type === 'option') lines.push(`${prefix}(${a.option}) ${a.decision}`);
-    if (a.type === 'custom') lines.push(`${prefix}CUSTOM ANSWER: ${a.decision}`);
-    if (a.type === 'clarify') lines.push(`${prefix}CLARIFICATION REQUESTED: ${a.questionForAgent}`);
-    if (a.type === 'defer') lines.push(`${prefix}DEFERRED. No decision.`);
-    if (a.type === 'unanswered') lines.push(`${prefix}UNANSWERED. No decision.`);
-    if (a.note) lines.push(`  ${a.type === 'unanswered' ? 'Draft note, not a decision' : 'Note'}: ${a.note}`);
+    let response;
+    if (a.type === 'option') response = a.option;
+    if (a.type === 'custom') response = `Answer: ${JSON.stringify(a.decision)}`;
+    if (a.type === 'clarify') response = `Question: ${JSON.stringify(a.questionForAgent)}`;
+    if (a.type === 'defer') response = 'Decide later';
+    if (a.type === 'unanswered') response = 'Unanswered';
+    if (a.note) response += ` | ${a.type === 'unanswered' ? 'Draft comment' : 'Comment'}: ${JSON.stringify(a.note)}`;
+    lines.push(prefix + response);
   }
-  lines.push('', 'Apply only the explicit decisions above to this packet and revision. Keep unanswered, deferred, and clarification requests open.');
-  return lines.join('\n');
+  return lines.join('; ');
 }
 
 export function restoreSession(session) {

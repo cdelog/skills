@@ -13,7 +13,7 @@ test('local file completes the copy/paste workflow with zero network requests',a
   await page.locator('[data-id="1"] [data-option="a"]').click();
   await page.locator('[data-id="2"] [data-option="b"]').click();
   await page.locator('#note-2').fill('The stronger hierarchy is easier to scan.');
-  await expect(page.locator('#output')).toHaveValue(/2: \(b\).*Dense/);
+  await expect(page.locator('#output')).toHaveValue('1: a; 2: b | Comment: "The stronger hierarchy is easier to scan."');
   await expect(page.locator('#output')).toHaveValue(/stronger hierarchy/);
   await page.locator('#copy').click();
   await expect(page.locator('#status')).toHaveText(/Copied|Automatic copying is blocked/);
@@ -35,10 +35,10 @@ test('clarification stays open and saved progress restores it',async({page})=>{
   await expect(page.locator('#copy')).toBeDisabled();
   await page.locator('#note-2').fill('Can I see both at full size?');
   await expect(page.locator('#copy')).toBeEnabled();
-  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
-  await expect(page.locator('#output')).toHaveValue(/2: CLARIFICATION REQUESTED/);
+  await expect(page.locator('#output')).toHaveValue(/1: Unanswered/);
+  await expect(page.locator('#output')).toHaveValue(/2: Question: "Can I see both at full size\?"/);
   const pending=page.waitForEvent('download');await page.locator('#save-session').click();const file=await pending;
-  await page.reload();await expect(page.locator('#output')).toHaveValue(/2: UNANSWERED/);
+  await page.reload();await expect(page.locator('#output')).toHaveValue(/2: Unanswered/);
   await page.locator('#loader').evaluate(el=>el.open=true);
   await page.locator('#load-file').setInputFiles(await file.path());
   await expect(page.locator('#note-2')).toHaveValue('Can I see both at full size?');
@@ -49,10 +49,10 @@ test('mobile width preserves paired images, zoom, and option selection',async({p
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.locator('[data-zoom="0"]').click();await expect(page.locator('#zoom')).toBeVisible();
   await page.getByRole('button',{name:'Close full-size image'}).click();
-  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
+  await expect(page.locator('#output')).toHaveValue(/1: Unanswered/);
   await page.locator('[data-id="1"] [data-option="a"]').click();
   await page.locator('[data-id="2"] [data-option="b"]').click();
-  await expect(page.locator('#output')).toHaveValue(/2: \(b\)/);
+  await expect(page.locator('#output')).toHaveValue('1: a; 2: b');
 });
 test('reusable viewer accepts a packet and renders hostile-looking text literally',async({page})=>{
   await page.goto(target);
@@ -84,8 +84,8 @@ test('choosing an option hides alternate controls and toggling it off preserves 
   await expect(card.locator('.actions')).toBeVisible();
   await expect(card.locator('[data-option="b"]')).toHaveAttribute('aria-pressed','false');
   await expect(card.locator('.note')).toHaveValue('Keep this context.');
-  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
-  await expect(page.locator('#output')).toHaveValue(/Draft note, not a decision: Keep this context/);
+  await expect(page.locator('#output')).toHaveValue(/1: Unanswered/);
+  await expect(page.locator('#output')).toHaveValue(/Draft comment: "Keep this context/);
 });
 test('cards show plain implications and only the supported reason for option B',async({page})=>{
   await page.goto(target);
