@@ -26,6 +26,25 @@ It does not need to write HTML for each sheet. The output embeds its pictures,
 CSS, and scripts. It works locally with no QIOR server, account, API key, or
 network requests. Copying or downloading answers is the return step.
 
+## How it works
+
+Pick an option and add a note when the agent needs more context. Selecting an
+option hides the alternate controls. Click the option again to deselect it.
+
+![A question with option A selected and an optional note explaining the decision.](docs/screenshots/choose-an-answer.png)
+
+For a visual decision, compare the two pictures and choose a direction. Click
+either picture to enlarge it near its original position on the page.
+
+![Two design pictures side by side, with option B selected and a note about the colored header.](docs/screenshots/compare-pictures.png)
+
+Copy the generated reply and send it back to the agent. It contains the
+selected options and your notes, with unanswered questions left open.
+
+![The generated plain-text reply containing both selected answers and notes, with a Copy answers button.](docs/screenshots/copy-decisions.png)
+
+These screenshots use the synthetic example packet included with the skill.
+
 ## Install the skill
 
 Ask your agent:
@@ -120,6 +139,10 @@ npm run test:browser
 Playwright is a development dependency. It is not needed by installed skills
 or included in generated HTML. To test an installed browser instead, set
 `QIOR_BROWSER_CHANNEL` to a Playwright channel such as `msedge`.
+
+To regenerate the README screenshots from the example packet, run
+`npm run screenshots`. The capture script opens the generated local file and
+uses only the synthetic example content.
 
 Generated reports belong in `output/`, which Git ignores. Keep real decision
 packets, screenshots, tokens, environment files, and machine-specific paths
