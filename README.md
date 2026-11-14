@@ -38,10 +38,12 @@ either picture to enlarge it near its original position on the page.
 
 ![Two design pictures side by side, with option B selected and a note about the colored header.](docs/screenshots/compare-pictures.png)
 
-Copy the generated reply and send it back to the agent. It contains the
-selected options and your notes, with unanswered questions left open.
+Copy the generated reply and send it back to the agent. It puts all responses
+on one line, with question IDs, selected letters, and any quoted comments or
+follow-up questions. Semicolons separate the responses.
+Unanswered and deferred questions remain open.
 
-![The generated plain-text reply containing both selected answers and notes, with a Copy answers button.](docs/screenshots/copy-decisions.png)
+![The compact plain-text reply containing question IDs, option letters, and comments, with a Copy answers button.](docs/screenshots/copy-decisions.png)
 
 These screenshots use the synthetic example packet included with the skill.
 

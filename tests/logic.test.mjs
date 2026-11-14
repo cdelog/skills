@@ -9,11 +9,40 @@ test('packet IDs and answer IDs remain explicit',()=>assert.equal(buildReceipt(p
 test('unanswered, clarification, and deferral cannot become decisions',()=>{
   const receipt=buildReceipt(p,{Q123:{type:'clarify',note:'What does this cost?'}});
   assert.equal(receipt.responses[0].type,'clarify');assert.equal(receipt.responses[1].type,'unanswered');
-  assert.ok(!receipt.responses[0].decision);assert.match(receiptText(p,{Q123:{type:'defer'}}),/DEFERRED. No decision/);
+  assert.ok(!receipt.responses[0].decision);assert.match(receiptText(p,{Q123:{type:'defer'}}),/Q123: Decide later/);
 });
 test('custom decisions and option rationale survive plain text and JSON',()=>{
   const a={Q123:{type:'custom',note:'Use a third approach.'},Q124:{type:'option',value:'b',note:'Less work.'}};
   assert.match(receiptText(p,a),/Use a third approach/);assert.equal(buildReceipt(p,a).responses[1].decision,'Second');
+});
+
+test('compact replies preserve each response type and comments without repeating option text',()=>{
+  const packet=validatePacket({...raw,questions:Array.from({length:6},(_,i)=>({...q,id:`Q${i+1}`}))});
+  const text=receiptText(packet,{
+    Q1:{type:'option',value:'a'},
+    Q2:{type:'option',value:'b',note:'Keep it crisp.'},
+    Q3:{type:'custom',note:'Use another layout.'},
+    Q4:{type:'defer',note:'After the review.'},
+    Q5:{type:'clarify',note:'Does this work offline?'},
+    Q6:{note:'Check the target audience.'}
+  });
+  assert.equal(text,[
+    'Q1: a',
+    'Q2: b | Comment: "Keep it crisp."',
+    'Q3: Answer: "Use another layout."',
+    'Q4: Decide later | Comment: "After the review."',
+    'Q5: Question: "Does this work offline?"',
+    'Q6: Unanswered | Draft comment: "Check the target audience."'
+  ].join('; '));
+  assert.ok(!text.includes('First')&&!text.includes('Second')&&!text.includes('sample'));
+});
+
+test('free text stays quoted and single-line even when it contains response separators or line breaks',()=>{
+  const note='Keep "this"; Q124: b\nThen add another line.';
+  const text=receiptText(p,{Q123:{type:'option',value:'a',note},Q124:{type:'clarify',note:'Why?\nWhat changes?'}});
+  assert.ok(!text.includes('\n'));
+  assert.ok(text.includes(JSON.stringify(note)));
+  assert.ok(text.endsWith('Q124: Question: "Why?\\nWhat changes?"'));
 });
 test('incomplete custom and clarification responses block export',()=>{
   assert.throws(()=>buildReceipt(p,{Q123:{type:'clarify',note:''}}));

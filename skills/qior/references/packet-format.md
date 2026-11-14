@@ -35,7 +35,7 @@ when A is your recommendation. Omit it when you have none. An optional
 `considerB` string is allowed only with two options and no recommendation.
 It appears within option B as a reason to consider it.
 
-An optional `origin` string is retained in the exported answer for routing.
+An optional `origin` string is retained in the JSON answer for routing.
 It is not shown as introductory text in the sheet. Omit it unless it helps
 the receiving agent identify the conversation.
 
@@ -77,7 +77,21 @@ to stderr and exit with status 1. Success writes one JSON result to stdout.
 ## Answer interface
 
 The user pastes the sheet's plain text or JSON output into the conversation.
-JSON output uses `format: "qior.answers.v1"`, `packetId`, `revision`, and
+The default plain text puts all responses on one line, using their original
+IDs and semicolons between responses:
+
+```text
+Q1: a; Q2: b | Comment: "Keep it crisp."; Q3: Answer: "Use another layout."; Q4: Decide later; Q5: Question: "Does this work offline?"; Q6: Unanswered
+```
+
+Option text, packet metadata, and closing instructions are omitted from the
+plain text. Free text is quoted, with quotes and line breaks escaped as in
+JSON, so comments cannot be confused with another response. Notes on unanswered
+questions are labeled `Draft comment` to keep them distinct from decisions.
+The receiving agent uses the question IDs in the originating conversation.
+
+JSON output retains the full record, including option text, when needed.
+It uses `format: "qior.answers.v1"`, `packetId`, `revision`, and
 `responses`. Each response has a question `id`, its question text, and a type:
 
 - `option`: `option` is a lowercase letter and `decision` is the option text.

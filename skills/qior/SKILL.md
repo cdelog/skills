@@ -74,9 +74,12 @@ node "<skill-root>/scripts/qior.mjs" viewer --out viewer.html
 The user copies plain text or JSON from the sheet and sends it back in the
 originating conversation. Creating or opening a sheet supplies no answers.
 
-- Match the packet ID, revision, and question IDs before using a response.
-  If it is from an older revision, reconcile the changed questions before
-  acting on those answers. Continue with answers whose meaning is clear.
+- Plain text puts all responses on one line, separated by semicolons, such
+  as `Q1: a; Q2: b | Comment: "Keep it crisp."`. Free text is quoted, with
+  embedded line breaks escaped. Match the IDs to the latest question
+  sheet in the originating conversation. If a question has since changed,
+  clarify that answer before acting. JSON also carries the packet ID and
+  revision for matching. Continue with answers whose meaning is clear.
 - Echo each explicit decision briefly and act within existing authorization.
   Record it in the project's existing decision log when there is one.
 - A custom answer is the user's decision as written. Preserve their notes.
