@@ -5,6 +5,8 @@ in its own folder and follows the [Agent Skills format](https://agentskills.io/s
 
 ## QIOR
 
+A harness for the human that lets AI agents ask questions and collect decisions.
+
 QIOR, pronounced choir, means Question, Implications, Options, Recommendation.
 An agent prepares a question sheet, you choose answers, then copy the reply
 back into the conversation. Questions can include side by side pictures.
