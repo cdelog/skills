@@ -7,6 +7,15 @@ in its own folder and follows the [Agent Skills format](https://agentskills.io/s
 
 A harness for the human that lets AI agents ask questions and collect decisions.
 
+[Try the demo sheet](https://cdelog.github.io/skills/) in your browser, with
+nothing to install. Install the skill with the [skills CLI](https://skills.sh):
+
+```sh
+npx skills add cdelog/skills --skill qior
+```
+
+![Answering four decisions on a QIOR sheet: picking options, enlarging one of two pictures, adding a note, then copying a one-line reply.](docs/screenshots/demo.gif)
+
 QIOR, pronounced choir, means Question, Implications, Options, Recommendation.
 An agent prepares a question sheet, you choose answers, then copy the reply
 back into the conversation. Questions can include side by side pictures.
@@ -51,7 +60,8 @@ These screenshots use the synthetic example packet included with the skill.
 
 ## Install the skill
 
-Ask your agent:
+The quickest way is the `npx skills add` command above. It installs into the
+current project. Add `-g` to install it for your user instead. Or ask your agent:
 
 ```text
 Install the qior skill from https://github.com/cdelog/skills into my user skills folder.
@@ -148,6 +158,17 @@ To regenerate the README screenshots from the example packet, run
 `npm run screenshots`. The capture script opens the generated local file and
 uses only the synthetic example content.
 
+The demo page renders [docs/demo/questions.json](docs/demo/questions.json),
+a synthetic habit tracker packet. The Pages workflow publishes it on each push
+to `main` that changes the skill or the demo. To regenerate the animation,
+run `npm run demo:video` with a Chromium-based browser, then convert the
+frames with [ffmpeg](https://ffmpeg.org):
+
+```sh
+cd output/demo-frames
+ffmpeg -f concat -i frames.txt -vf "fps=15,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle" -loop 0 ../../docs/screenshots/demo.gif
+```
+
 Generated reports belong in `output/`, which Git ignores. Keep real decision
 packets, screenshots, tokens, environment files, and machine-specific paths
 out of contributions. See [SECURITY.md](SECURITY.md).
@@ -163,6 +184,7 @@ skills/qior/
   references/              Input guide and JSON schema
   LICENSE                  License retained when the folder is copied
 steering/qior.md           Text-only instructions
+docs/demo/                 Demo packet and pictures for the published page
 tests/                     CLI, response, and browser checks
 ```
 
