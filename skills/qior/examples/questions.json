@@ -1,0 +1,34 @@
+{
+  "id": "qior-portable-round-1",
+  "revision": 3,
+  "title": "Two decisions. One reply.",
+  "questions": [
+    {
+      "id": "1",
+      "kind": "question",
+      "question": "How do you want to return your decisions to the agent?",
+      "implications": "This determines whether you send the agent a text reply or an attachment. It also decides whether you use an interactive sheet or answer directly in the conversation.",
+      "options": [
+        "Copy a reply from this HTML file and paste it into the agent conversation.",
+        "Save an answer file and attach it to the agent conversation.",
+        "Keep the questions and answers as plain text in the conversation."
+      ],
+      "recommended": true
+    },
+    {
+      "id": "2",
+      "kind": "comparison",
+      "question": "Which example decision-card design is easier for you to scan?",
+      "implications": "Your choice sets the visual direction for the next version of the decision cards.",
+      "options": [
+        "A · Quiet layout with a clear option list.",
+        "B · Dense layout with a stronger visual header."
+      ],
+      "considerB": "its colored header separates each decision from the surrounding content.",
+      "images": [
+        {"path": "design-a.png", "alt": "Quiet layout, light background"},
+        {"path": "design-b.png", "alt": "Dense layout, dark background"}
+      ]
+    }
+  ]
+}

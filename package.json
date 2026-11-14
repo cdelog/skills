@@ -1,0 +1,13 @@
+{
+  "name": "cdelog-skills",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "demo": "node skills/qior/scripts/qior.mjs render skills/qior/examples/questions.json --out output/decisions.html",
+    "viewer": "node skills/qior/scripts/qior.mjs viewer --out output/viewer.html",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {"@playwright/test": "^1.65.1"}
+}

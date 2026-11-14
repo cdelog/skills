@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>QIOR · Portable decisions</title><style>%%STYLE%%</style></head>
+<body><main>
+<header><div class="wordmark">QIOR<span> / </span><small>Decision sheet</small></div><span class="badge">Offline HTML</span></header>
+<section class="intro"><h1 id="title">Your questions, in one place.</h1></section>
+<details id="loader"><summary>Load questions or resume a saved session</summary><div class="panel"><label class="file-label">Choose a JSON file <input id="load-file" type="file" accept=".json,application/json"></label><label for="input-json">Or paste question JSON</label><textarea id="input-json" rows="5" spellcheck="false" placeholder='{"id":"project-round-1","revision":1,"title":"Decisions","questions":[...]}'></textarea><button id="load-json">Load JSON</button><p class="muted">Loading replaces this sheet. Save any current answers first.</p></div></details>
+<div class="status-row"><span id="progress">No questions loaded</span><button id="save-session" disabled>Save progress</button></div>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="questions" aria-label="Questions"></section>
+<section id="handoff" class="panel"><div class="handoff-heading"><div><h2>Back to the agent</h2><p class="muted">Review exactly what you will paste.</p></div><label>Format <select id="output-format"><option value="text">Plain text</option><option value="json">JSON</option></select></label></div><textarea id="output" aria-label="Answers to paste back to the agent" rows="8" readonly spellcheck="false"></textarea><div class="actions"><button id="copy" class="primary" disabled>Copy answers</button><button id="select-output" disabled>Select text</button><button id="download" disabled>Download answers</button></div><p class="muted small">If copying is blocked, select the text and use your device’s Copy command, or download the answer file. Save progress before closing to resume later.</p></section>
+<footer>Questions and pictures stay in this file. Answers stay in this tab until you copy or save them.</footer>
+<noscript><p>This viewer needs JavaScript. Open the HTML in a browser that allows local scripts, or ask the agent for plain-text QIOR questions.</p></noscript>
+</main><dialog id="zoom"><button id="close-zoom" aria-label="Close full-size image">Close image</button><img id="zoom-image" alt=""></dialog>
+<script type="application/json" id="packet-data">%%DATA%%</script><script>%%LOGIC%%
+%%APP%%</script></body></html>
