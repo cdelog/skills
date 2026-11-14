@@ -1,0 +1,57 @@
+{
+  "id": "demo-habit-tracker-1",
+  "revision": 1,
+  "title": "Demo: an agent building a habit tracker needs 4 decisions",
+  "questions": [
+    {
+      "id": "1",
+      "kind": "question",
+      "question": "Where should habit data live in the first version?",
+      "implications": "This decides whether people need an account. Browser storage keeps version one offline and free to host, but each device keeps its own data.",
+      "options": [
+        "Browser storage on the device, with no accounts.",
+        "A small server with SQLite and email sign-in.",
+        "A hosted database such as Supabase, with sign-in."
+      ],
+      "recommended": true
+    },
+    {
+      "id": "2",
+      "kind": "comparison",
+      "question": "Which home screen should the app open to?",
+      "implications": "This sets the first screen people see and which layout the agent builds and tests first.",
+      "options": [
+        "Today list with a checkbox for each habit.",
+        "Weekly grid with a streak count for each habit."
+      ],
+      "considerB": "streaks are visible without opening each habit.",
+      "images": [
+        {"path": "home-today.png", "alt": "Today list with four habits, two checked"},
+        {"path": "home-week.png", "alt": "Weekly grid of habits with streak counts"}
+      ]
+    },
+    {
+      "id": "3",
+      "kind": "question",
+      "question": "Should reminders ship in the first version?",
+      "implications": "Reminders need a notification permission prompt and a service worker. Leaving them out keeps the first release smaller.",
+      "options": [
+        "Leave reminders for version two.",
+        "One daily reminder at a time the person picks.",
+        "A separate reminder time for each habit."
+      ],
+      "recommended": true
+    },
+    {
+      "id": "4",
+      "kind": "question",
+      "question": "What should a missed day do to a streak?",
+      "implications": "This sets the streak rule the tests check and the line under the weekly view.",
+      "options": [
+        "Reset the streak to zero.",
+        "Allow one missed day per week before the streak resets."
+      ],
+      "recommended": true
+    }
+  ]
+}

@@ -8,7 +8,8 @@
     "demo": "node skills/qior/scripts/qior.mjs render skills/qior/examples/questions.json --out output/decisions.html",
     "viewer": "node skills/qior/scripts/qior.mjs viewer --out output/viewer.html",
     "test:browser": "playwright test",
-    "screenshots": "playwright test --config playwright.docs.config.mjs"
+    "screenshots": "playwright test --config playwright.docs.config.mjs capture-readme",
+    "demo:video": "playwright test --config playwright.docs.config.mjs record-demo"
   },
   "devDependencies": {"@playwright/test": "^1.65.1"}
 }
