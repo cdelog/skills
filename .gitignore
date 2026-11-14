@@ -1,0 +1,14 @@
+node_modules/
+output/
+test-results/
+playwright-report/
+*.tgz
+.env
+.env.*
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+.DS_Store
+Thumbs.db

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QIOR question packet",
+  "type": "object",
+  "required": ["id", "revision", "title", "questions"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "title": {"type": "string", "minLength": 1},
+    "origin": {"type": "string"},
+    "questions": {
+      "type": "array", "minItems": 1, "maxItems": 20,
+      "items": {"$ref": "#/$defs/question"}
+    }
+  },
+  "$defs": {
+    "image": {
+      "type": "object",
+      "required": ["alt"],
+      "properties": {
+        "alt": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "src": {"type": "string", "pattern": "^data:image/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$"}
+      },
+      "oneOf": [{"required": ["path"], "not": {"required": ["src"]}}, {"required": ["src"], "not": {"required": ["path"]}}]
+    },
+    "question": {
+      "type": "object",
+      "required": ["id", "kind", "question", "implications", "options"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^(?:Q|q)?[1-9][0-9]*$"},
+        "kind": {"enum": ["question", "comparison"]},
+        "question": {"type": "string", "minLength": 1, "pattern": "\\?$", "description": "One sentence asking what the user needs to decide."},
+        "implications": {"type": "string", "minLength": 1, "description": "One or two sentences explaining what the answer influences and how."},
+        "options": {"type": "array", "minItems": 2, "maxItems": 4, "items": {"type": "string", "minLength": 1}},
+        "recommended": {"type": "boolean", "description": "True only when option A is recommended."},
+        "considerB": {"type": "string", "minLength": 1, "description": "An optional reason to consider B, only for two options without a recommendation."},
+        "images": {"type": "array", "maxItems": 2, "items": {"$ref": "#/$defs/image"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"kind": {"const": "comparison"}}}, "then": {"required": ["images"], "properties": {"images": {"minItems": 2, "maxItems": 2}}}, "else": {"properties": {"images": {"maxItems": 0}}}},
+        {"if": {"required": ["considerB"]}, "then": {"properties": {"options": {"minItems": 2, "maxItems": 2}, "recommended": {"const": false}}}}
+      ]
+    }
+  }
+}

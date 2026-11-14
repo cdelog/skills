@@ -1,0 +1,124 @@
+import {test,expect} from '@playwright/test';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
+import {readFile} from 'node:fs/promises';
+const target = pathToFileURL(resolve('output/decisions.html')).href;
+test('local file completes the copy/paste workflow with zero network requests',async({page})=>{
+  const requests=[];const errors=[];
+  page.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(target);
+  await expect(page.getByRole('heading',{name:'Two decisions. One reply.'})).toBeVisible();
+  await expect(page.locator('.pictures img').first()).toHaveJSProperty('naturalWidth',560);
+  await page.locator('[data-id="1"] [data-option="a"]').click();
+  await page.locator('[data-id="2"] [data-option="b"]').click();
+  await page.locator('#note-2').fill('The stronger hierarchy is easier to scan.');
+  await expect(page.locator('#output')).toHaveValue(/2: \(b\).*Dense/);
+  await expect(page.locator('#output')).toHaveValue(/stronger hierarchy/);
+  await page.locator('#copy').click();
+  await expect(page.locator('#status')).toHaveText(/Copied|Automatic copying is blocked/);
+  // Force the browser-denied path as well; the manual selection must remain usable.
+  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:()=>Promise.reject(Error('Denied'))}}));
+  await page.locator('#copy').click();
+  await expect(page.locator('#status')).toHaveText(/Automatic copying is blocked/);
+  expect(await page.locator('#output').evaluate(el=>el.selectionEnd-el.selectionStart)).toBeGreaterThan(10);
+  await page.locator('#output-format').selectOption('json');
+  const receipt=JSON.parse(await page.locator('#output').inputValue());
+  expect(receipt.responses.map(r=>r.option)).toEqual(['a','b']);
+  const downloaded=page.waitForEvent('download');await page.locator('#download').click();
+  const file=await downloaded;expect(JSON.parse(await readFile(await file.path(),'utf8')).format).toBe('qior.answers.v1');
+  expect(requests).toEqual([]);expect(errors).toEqual([]);
+});
+test('clarification stays open and saved progress restores it',async({page})=>{
+  await page.goto(target);
+  await page.locator('[data-id="2"] [data-type="clarify"]').click();
+  await expect(page.locator('#copy')).toBeDisabled();
+  await page.locator('#note-2').fill('Can I see both at full size?');
+  await expect(page.locator('#copy')).toBeEnabled();
+  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
+  await expect(page.locator('#output')).toHaveValue(/2: CLARIFICATION REQUESTED/);
+  const pending=page.waitForEvent('download');await page.locator('#save-session').click();const file=await pending;
+  await page.reload();await expect(page.locator('#output')).toHaveValue(/2: UNANSWERED/);
+  await page.locator('#loader').evaluate(el=>el.open=true);
+  await page.locator('#load-file').setInputFiles(await file.path());
+  await expect(page.locator('#note-2')).toHaveValue('Can I see both at full size?');
+  await expect(page.locator('[data-id="2"] [data-type="clarify"]')).toHaveAttribute('aria-pressed','true');
+});
+test('mobile width preserves paired images, zoom, and option selection',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await page.goto(target);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.locator('[data-zoom="0"]').click();await expect(page.locator('#zoom')).toBeVisible();
+  await page.getByRole('button',{name:'Close full-size image'}).click();
+  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
+  await page.locator('[data-id="1"] [data-option="a"]').click();
+  await page.locator('[data-id="2"] [data-option="b"]').click();
+  await expect(page.locator('#output')).toHaveValue(/2: \(b\)/);
+});
+test('reusable viewer accepts a packet and renders hostile-looking text literally',async({page})=>{
+  await page.goto(target);
+  const packet=await page.locator('#packet-data').textContent();
+  await page.goto(pathToFileURL(resolve('output/viewer.html')).href);
+  await expect(page.locator('#loader')).toHaveAttribute('open','');
+  const data=JSON.parse(packet);data.title='</script><img src=x onerror=alert(1)>';
+  data.questions[0].question='Should <script>window.injected=true</script> be plain text?';
+  await page.locator('#input-json').fill(JSON.stringify(data));
+  await page.locator('#load-json').click();
+  await expect(page.locator('#title')).toHaveText(data.title);
+  expect(await page.evaluate(()=>window.injected)).toBeUndefined();
+  expect(await page.locator('.intro img').count()).toBe(0);
+  await expect(page.locator('#questions')).toContainText('window.injected=true');
+});
+test('choosing an option hides alternate controls and toggling it off preserves the note',async({page})=>{
+  await page.goto(target);
+  const card=page.locator('[data-id="1"]');
+  await expect(card.locator('.actions')).toBeVisible();
+  await card.locator('.note').fill('Keep this context.');
+  await card.locator('[data-option="a"]').click();
+  await expect(card.locator('.actions')).toHaveCount(0);
+  await expect(card.locator('.note')).toBeVisible();
+  await expect(card.locator('.note')).toHaveValue('Keep this context.');
+  await card.locator('[data-option="b"]').click();
+  await expect(card.locator('.actions')).toHaveCount(0);
+  await expect(card.locator('[data-option="b"]')).toHaveAttribute('aria-pressed','true');
+  await card.locator('[data-option="b"]').click();
+  await expect(card.locator('.actions')).toBeVisible();
+  await expect(card.locator('[data-option="b"]')).toHaveAttribute('aria-pressed','false');
+  await expect(card.locator('.note')).toHaveValue('Keep this context.');
+  await expect(page.locator('#output')).toHaveValue(/1: UNANSWERED/);
+  await expect(page.locator('#output')).toHaveValue(/Draft note, not a decision: Keep this context/);
+});
+test('cards show plain implications and only the supported reason for option B',async({page})=>{
+  await page.goto(target);
+  const first=page.locator('[data-id="1"]');const second=page.locator('[data-id="2"]');
+  await expect(first.locator('.implications')).toHaveText('This determines whether you send the agent a text reply or an attachment. It also decides whether you use an interactive sheet or answer directly in the conversation.');
+  await expect(first.locator('[data-option="a"]')).toContainText('Recommended');
+  await expect(first.locator('.consider-b')).toHaveCount(0);
+  await expect(second.locator('.recommend-tag')).toHaveCount(0);
+  await expect(second.locator('[data-option="b"] .consider-b')).toContainText('its colored header separates each decision');
+  await expect(page.locator('.facts,.fact-kind,.reason,.hold')).toHaveCount(0);
+  const cardsText=await page.locator('#questions').innerText();
+  expect(cardsText).not.toMatch(/\b(?:checked|estimated|reported|evidence)\b|Against \(a\)/i);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+test('image preview stays beside the source image in a tall sheet and on a scrolled page',async({page})=>{
+  for (const viewport of [{width:728,height:2600},{width:1280,height:800},{width:390,height:844}]) {
+    await page.setViewportSize(viewport);
+    await page.goto(target);
+    const source=page.locator('[data-zoom="0"]');
+    await source.scrollIntoViewIfNeeded();
+    const before=await source.boundingBox();
+    const scrollBefore=await page.evaluate(()=>scrollY);
+    await source.click();
+    await expect(page.locator('#zoom')).toBeVisible();
+    const preview=await page.locator('#zoom').boundingBox();
+    const sourceCenter=before.y+before.height/2;
+    // The preview overlaps the original image's vertical position instead of centering on the full sheet.
+    expect(preview.y).toBeLessThan(sourceCenter);
+    expect(preview.y+preview.height).toBeGreaterThan(sourceCenter);
+    expect(Math.abs(await page.evaluate(()=>scrollY)-scrollBefore)).toBeLessThan(2);
+    expect(preview.y).toBeGreaterThanOrEqual(15);
+    expect(preview.y+preview.height).toBeLessThanOrEqual(viewport.height-15);
+    await page.getByRole('button',{name:'Close full-size image'}).click();
+  }
+});

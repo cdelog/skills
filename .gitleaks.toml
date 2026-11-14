@@ -1,0 +1,11 @@
+title = "QIOR publication scan"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Installed dependencies and Git internals"
+paths = [
+  '''(^|[/\\])node_modules([/\\]|$)''',
+  '''^\.git[/\\]'''
+]
